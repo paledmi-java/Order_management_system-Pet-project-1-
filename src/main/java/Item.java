@@ -7,12 +7,16 @@ public class Item {
     private int mass;
     private int kcal;
     private String imageURL;
-    private boolean isMultiComp;
+    private boolean hasMultiComp;
     private boolean isChangeable;
     private boolean isAvailable;
 
+    public Item(){
+    }
+
+
     public Item(int itemId, String name, String ingredients, int price, String description,
-                int mass, int kcal, String imageURL, boolean isMultiComp,
+                int mass, int kcal, String imageURL, boolean hasMultiComp,
                 boolean isChangeable, boolean isAvailable) {
         this.itemId = itemId;
         this.name = name;
@@ -22,10 +26,20 @@ public class Item {
         this.mass = mass;
         this.kcal = kcal;
         this.imageURL = imageURL;
-        this.isMultiComp = isMultiComp;
+        this.hasMultiComp = hasMultiComp;
         this.isChangeable = isChangeable;
         this.isAvailable = isAvailable;
     }
+
+    public String toString(){
+        return String.format("Item: Id-%d, Name: %s, Ingredients: %s, " +
+                "Price: %d, Mass: %d, Kcal: %d, Has multiple components: %b, " +
+                "Is changeable: %b, Is available: %b",
+                itemId, name, ingredients, price, mass, kcal,
+                hasMultiComp, isChangeable, isAvailable);
+    }
+
+
 
     public int getItemId() {
         return itemId;
@@ -92,11 +106,11 @@ public class Item {
     }
 
     public boolean isMultiComp() {
-        return isMultiComp;
+        return hasMultiComp;
     }
 
     public void setMultiComp(boolean multiComp) {
-        isMultiComp = multiComp;
+        hasMultiComp = multiComp;
     }
 
     public boolean isChangeable() {

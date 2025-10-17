@@ -1,14 +1,12 @@
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Set;
 
-public class CustomerAddress {
+public class ClientAddress {
     private boolean isDefault;
     private String city;
     private String address;
     private LocalDateTime calcDeliveryTime;
 
-    public CustomerAddress(String city, String address) {
+    public ClientAddress(String city, String address) {
         this.city = city;
         this.address = address;
     }

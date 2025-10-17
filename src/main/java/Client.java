@@ -1,25 +1,28 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
-public class Customer {
+public class Client {
     private int customerId;
     boolean isActive;
     private String name;
     private LocalDate dateOfBirth;
     private String phoneNumber;
     private String email;
-    private CustomerAddress address;
+    private ClientAddress address;
     boolean isAdvertisable;
     boolean isProfileComplete;
     boolean isOnlineCheckOn;
     private int bonusesAmount;
     private LinkedHashSet<Order> ordersHistory;
     private LinkedHashSet<Item> favouriteItems;
-    private ArrayList<CustomerAddress> addresses;
+    private ArrayList<ClientAddress> addresses;
 
-    public Customer(String phoneNumber, String name) {
+    public Client(){
+
+    }
+
+    public Client(String phoneNumber, String name) {
         this.phoneNumber = phoneNumber;
         this.name = name;
         boolean isProfileComplete = false;
@@ -55,7 +58,7 @@ public class Customer {
         return email;
     }
 
-    public CustomerAddress getAddress() {
+    public ClientAddress getAddress() {
         return address;
     }
 
@@ -107,7 +110,7 @@ public class Customer {
         this.email = email;
     }
 
-    public void setAddress(CustomerAddress address) {
+    public void setAddress(ClientAddress address) {
         this.address = address;
     }
 
@@ -125,5 +128,13 @@ public class Customer {
 
     public void setBonusesAmount(int bonusesAmount) {
         this.bonusesAmount = bonusesAmount;
+    }
+
+    public ArrayList<ClientAddress> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(ArrayList<ClientAddress> addresses) {
+        this.addresses = addresses;
     }
 }

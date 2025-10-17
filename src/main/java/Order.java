@@ -3,12 +3,12 @@ import java.util.ArrayList;
 
 public class Order {
     private int orderId;
-    private Customer customer;
+    private Client customer;
     private int price;
     private ArrayList<Item> bucket;
     private boolean isDeliverable;
     private boolean isDeliveryFree;
-    private CustomerAddress orderAddress;
+    private ClientAddress orderAddress;
     private String status;
     private String commentary;
     private LocalDateTime createdAt;
@@ -17,8 +17,8 @@ public class Order {
     private boolean isBonusUsed;
     private boolean isPromoCodeUsed;
 
-    public Order(int orderId, Customer customer, int price, ArrayList<Item> bucket,
-                 boolean isDeliveryFree, boolean isDeliverable, CustomerAddress orderAddress,
+    public Order(int orderId, Client customer, int price, ArrayList<Item> bucket,
+                 boolean isDeliveryFree, boolean isDeliverable, ClientAddress orderAddress,
                  String status, LocalDateTime createdAt,
                  LocalDateTime requiredDeliveryTime, boolean isBonusUsed,
                  boolean isPromoCodeUsed) {
@@ -45,11 +45,11 @@ public class Order {
         this.orderId = orderId;
     }
 
-    public Customer getCustomer() {
+    public Client getCustomer() {
         return customer;
     }
 
-    public void setCustomer(Customer customer) {
+    public void setCustomer(Client customer) {
         this.customer = customer;
     }
 
@@ -77,11 +77,11 @@ public class Order {
         isDeliveryFree = deliveryFree;
     }
 
-    public CustomerAddress getOrderAddress() {
+    public ClientAddress getOrderAddress() {
         return orderAddress;
     }
 
-    public void setOrderAddress(CustomerAddress orderAddress) {
+    public void setOrderAddress(ClientAddress orderAddress) {
         this.orderAddress = orderAddress;
     }
 
