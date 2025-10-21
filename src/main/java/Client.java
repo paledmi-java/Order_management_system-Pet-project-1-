@@ -3,11 +3,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 public class Client {
-    private int customerId;
+    private int clientId;
+    private Credentials credentials;
     boolean isActive;
     private String name;
+    private String login;
+    private String password;
+    private boolean isAuthorised;
     private LocalDate dateOfBirth;
     private String phoneNumber;
+    private final ArrayList<Item> bucket = new ArrayList<>();
     private String email;
     private ClientAddress address;
     boolean isAdvertisable;
@@ -18,14 +23,18 @@ public class Client {
     private LinkedHashSet<Item> favouriteItems;
     private ArrayList<ClientAddress> addresses;
 
-    public Client(){
 
+    public Client(){
+        isAuthorised = false;
     }
 
-    public Client(String phoneNumber, String name) {
+    public Client(int clientId, String phoneNumber, String name, String login, String password) {
         this.phoneNumber = phoneNumber;
         this.name = name;
-        boolean isProfileComplete = false;
+        this.login = login;
+        this.password = password;
+        this.isAuthorised = true;
+        this.isProfileComplete = false;
         this.isActive = true;
         this.isAdvertisable = true;
         this.isOnlineCheckOn = true;
@@ -34,8 +43,41 @@ public class Client {
 //        favouriteItems = new LinkedHashSet<>();
     }
 
-    public int getCustomerId() {
-        return customerId;
+
+    public Credentials getCredentials() {
+        return credentials;
+    }
+
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isAuthorised() {
+        return isAuthorised;
+    }
+
+    public void setAuthorised(boolean authorised) {
+        isAuthorised = authorised;
+    }
+
+    public int getClientId() {
+        return clientId;
     }
 
     public boolean isActive() {
@@ -86,8 +128,12 @@ public class Client {
         return favouriteItems;
     }
 
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
+    public ArrayList<Item> getBucket() {
+        return bucket;
+    }
+
+    public void setClientId(int customerId) {
+        this.clientId = customerId;
     }
 
     public void setActive(boolean active) {

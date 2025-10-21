@@ -5,7 +5,7 @@ public class Order {
     private int orderId;
     private Client customer;
     private int price;
-    private ArrayList<Item> bucket;
+    private ArrayList<Item> bucket; // IS NEEDED???
     private boolean isDeliverable;
     private boolean isDeliveryFree;
     private ClientAddress orderAddress;
