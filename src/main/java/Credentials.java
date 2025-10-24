@@ -1,12 +1,17 @@
 public class Credentials {
-    String login;
-    String hashedPassword;
-    int clientId;
+    private String login;
+    private String hashedPassword;
+    private int clientId;
 
     public Credentials(String login, String hashedPassword, int clientId) {
         this.login = login;
         this.hashedPassword = hashedPassword;
         this.clientId = clientId;
+    }
+
+    public Credentials (String login, String hashedPassword){
+        this.login = login;
+        this.hashedPassword = hashedPassword;
     }
 
     public String getLogin() {

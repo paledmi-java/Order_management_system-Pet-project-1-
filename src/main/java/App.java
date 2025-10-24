@@ -1,13 +1,13 @@
-import java.beans.Customizer;
 import java.util.Random;
 import java.util.Scanner;
 
-public class MainOrderSystem {
+public class App {
 
     public static void main(String[] args){
         ClientsManagerSystem clientsManagerSystem = new ClientsManagerSystem();
-        MenuController menuController = new MenuController();
-        menuController.fillTheFoodMenu();
+        MenuService menuService = new MenuService();
+        menuService.fillTheFoodMenu();
+        menuService.createAndAddSomeClients();
 
         Client client = new Client();
         Random random = new Random();
@@ -15,7 +15,12 @@ public class MainOrderSystem {
         boolean isExit = false;
 
         do {
-            menuController.showMainMenuForUser();
+            if (!client.isAuthorised()){
+                menuService.showMainMenuForUser();
+            } else {
+                menuService.showMainMenuForClient();
+            }
+
             int firstOption = scanner.nextInt();
 
             switch (firstOption) {
@@ -23,25 +28,39 @@ public class MainOrderSystem {
                 case 1:
                     boolean isExitFromFoodMenu = false;
                     do {
-                        menuController.showWholefoodMenu();
+                        menuService.showWholefoodMenu();
+
                         int choseAnItemOption = scanner.nextInt();
                         scanner.nextLine();
 
-                        MenuResult nextMenu = menuController.showSingleItem(client, choseAnItemOption);
+                        MenuResult nextMenu = menuService.showSingleItem(client, choseAnItemOption);
 
                         if (nextMenu.isExit() && nextMenu.getItem() == null){
                             isExitFromFoodMenu = true;
 
                         } else if (!nextMenu.isExit() && nextMenu.getItem() != null){
 
-                            menuController.putInBasketMessage();
+                            menuService.putInBasketMessage();
+
                             int putItBasketOption = scanner.nextInt();
                             scanner.nextLine();
 
-                            MenuController.ActionResult putInBasketResult = menuController.getPutInCartResult(client, nextMenu.getItem(), putItBasketOption);
-                            if (putInBasketResult == MenuController.ActionResult.NEED_AUTH){
-                                menuController.startLoginProcess(client, scanner);
-                                // ПОМЕНЯТЬ НАЗВАНИЯ МЕТОДОВ КЛАССОВ И ПЕРЕМЕННЫХ
+                            MenuService.PutInBasketResult putInBasketResult =
+                                    menuService.getPutInCartResult(client, nextMenu.getItem(), putItBasketOption);
+
+                            if (putInBasketResult == MenuService.PutInBasketResult.NEED_AUTH){
+                                   Client clientAuthorised = menuService.startLoginProcess(client, scanner);
+                                   if(clientAuthorised != null){
+                                       client = clientAuthorised;
+                                   }
+                                   menuService.addItemInCart(client, nextMenu.getItem());
+                                menuService.showSuccessPutInBasketMessage();
+                            } else if (putInBasketResult == MenuService.PutInBasketResult.ADDED){
+                                menuService.addItemInCart(client, nextMenu.getItem());
+                                menuService.showSuccessPutInBasketMessage();
+                                // NEED TO FINISH
+                            } else if(putInBasketResult == MenuService.PutInBasketResult.BACK_TO_MENU){
+                                isExitFromFoodMenu = true;
                             }
                         }
                     }  while (!isExitFromFoodMenu);
@@ -65,6 +84,28 @@ public class MainOrderSystem {
                             default -> System.out.println("Please chose the right option\n");
                         }
                     } while (!isExitFromPromos);
+
+
+                case 3: {
+
+                }
+
+                case 4: {
+                    client = menuService.startLoginProcess(client, scanner);
+                    break;
+                }
+
+                case 5: {
+                    menuService.startRegistrationProcess(scanner);
+                    break;
+                }
+
+//                case 6: {
+//                    if(){
+//
+//                    }
+//                }
+
             }
         } while (!isExit);
     }

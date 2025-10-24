@@ -4,14 +4,14 @@ public class ProductsManagerSystem implements ProductsManageable{
 
     private int itemIdCounter = 0;
     private final ArrayList<Item> allItems = new ArrayList<>();
-    private final HashSet<Item> searchOfItem = new HashSet<>();
+    private final HashMap<String, Item> searchOfItem = new HashMap<>();
     private final TreeSet<Item> sortedItemsByPrice = new TreeSet<>();
     private final HashMap<String, List<Item>> groupsOfItemsByType = new HashMap<>();
 
     @Override
     public void addAnItemToSystem(Item item) {
         allItems.add(item);
-        searchOfItem.add(item);
+        searchOfItem.put(item.getName(),item);
         sortedItemsByPrice.add(item);
 
         String type = item.getType();
@@ -56,7 +56,7 @@ public class ProductsManagerSystem implements ProductsManageable{
         return allItems;
     }
 
-    public HashSet<Item> getSearchOfItemList() {
+    public HashMap<String, Item> getSearchOfItemList() {
         return searchOfItem;
     }
 
