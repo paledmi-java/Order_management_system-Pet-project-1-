@@ -27,39 +27,72 @@ public class MenuService {
                 "5) Exit");
     }
 
-    public void showWholefoodMenu() {
-        System.out.println("Chose a number of Item or 0 to go back");
-        productsManagerSystem.getFullMenu();
-        System.out.println();
-    }
+    public Item showWholefoodMenu(Client client, Scanner scanner) {
+        boolean isExitFromFoodMenu = false;
+        Item theItem;
+        do {
+            System.out.println("Chose a number of Item or 0 to go back");
+            productsManagerSystem.getFullMenu();
+            System.out.println();
 
-    public MenuResult showSingleItem(Client client, int showAnItemOption){
-            if (showAnItemOption > 0 && showAnItemOption < productsManagerSystem.getAllItemsList().size()) {
-                Item theItem = productsManagerSystem.getAllItemsList().get(showAnItemOption);
+            int choseAnItemOption = scanner.nextInt();
+            scanner.nextLine();
+
+            // ИЗМЕНИТЬ NULL POINT EXCEPTION ПРИ ВЫБОРЕ БЛЮДА!!!
+            if (choseAnItemOption > 0 && choseAnItemOption <= productsManagerSystem.getAllItemsList().size()) {
+                theItem = productsManagerSystem.getAllItemsList().get(choseAnItemOption - 1);
                 System.out.println(theItem.itemFormat(Item.itemFormatType.PUBLIC) + "\n");
-                return new MenuResult(theItem, false);
-            } else if (showAnItemOption == 0) {
-                return new MenuResult(null, true);
+                isExitFromFoodMenu = true;
+
+            } else if (choseAnItemOption == 0) {
+                theItem = null;
+                isExitFromFoodMenu = true;
+
             } else {
                 System.out.println("Please chose the right number");
-                return new MenuResult(null, false);
+                theItem = null;
             }
+        } while (!isExitFromFoodMenu);
+        return theItem;
     }
 
-    public void startSearchProcess(Scanner scanner){
+    public Client putInBasketMenu(Client client, Item theItem, Scanner scanner) {
+        Client newClient;
+        System.out.println("Put this Item in your basket?\n" +
+                "1) Yes\n" +
+                "2) No");
+        int choseAnItemOption = scanner.nextInt();
+        scanner.nextLine();
+        if(choseAnItemOption == 1 && client.isAuthorised()){
+            this.addItemInCart(client, theItem);
+            newClient = null;
+
+        } else if (choseAnItemOption == 1 && !client.isAuthorised()){
+            System.out.println("Please log in or sign up first");
+            newClient = this.startLoginProcess(client, scanner);
+            if(newClient != null){
+                this.addItemInCart(client, theItem);
+            }
+        } else if (choseAnItemOption == 2){
+            newClient = null;
+        } else {
+            System.out.println("Please chose the right number");
+            newClient = null;
+        }
+        return newClient;
+    }
+
+    public void startSearchProcess(Client client, Scanner scanner){
         System.out.println("Enter name of the item: ");
         String itemName = scanner.nextLine();
         Item searchItem = productsManagerSystem.getSearchOfItemList().get(itemName);
         if( searchItem != null){
             System.out.println(searchItem.itemFormat(Item.itemFormatType.PUBLIC));
-            putInBasketMessage();
+            putInBasketMenu(client, searchItem, scanner);
         } else {
             System.out.println("The item is not found. Try again or type 0 to exit.");
         }
     }
-
-
-
 
     public enum PutInBasketResult {
         ADDED,
@@ -67,33 +100,13 @@ public class MenuService {
         BACK_TO_MENU
     }
 
-    public void putInBasketMessage() {
-        System.out.println("Put this Item in your basket?\n" +
-                "1) Yes\n" +
-                "2) No");
-    }
-
-    public void showSuccessPutInBasketMessage(){
-        System.out.println("The item successfully added to your cart");
-    }
+//    public void showSuccessPutInBasketMessage(){
+//        System.out.println("The item successfully added to your cart");
+//    }
 
     public void addItemInCart(Client client, Item theItem){
         client.getBucket().add(theItem);
-//        System.out.println("The item added to your kart");
-    }
-    public PutInBasketResult getPutInCartResult(Client client, Item theItem, int lastOption){
-        if(lastOption == 1 && client.isAuthorised()){
-            addItemInCart(client, theItem);
-            return PutInBasketResult.ADDED;
-        } else if (lastOption == 1 && !client.isAuthorised()){
-            System.out.println("Please log in or sign up first");
-            return PutInBasketResult.NEED_AUTH;
-        } else if (lastOption == 2){
-            return PutInBasketResult.BACK_TO_MENU;
-        } else {
-            System.out.println("Please chose the right number");
-            return null;
-        }
+        System.out.println("The item added to your kart");
     }
 
     public enum AuthorisationResultEnum {
@@ -128,7 +141,8 @@ public class MenuService {
         do {
             Credentials credentialsToAuth = showLoginMessage(scanner);
 
-            AuthorisationResult authResult = this.authorizationGetResult(credentialsToAuth.getLogin(), credentialsToAuth.getHashedPassword());
+            AuthorisationResult authResult = this.authorizationGetResult
+                    (credentialsToAuth.getLogin(), credentialsToAuth.getHashedPassword());
             if (authResult.getAuthorisationResultEnum() == AuthorisationResultEnum.WRONG_PASSWORD) {
                 System.out.println("Wrong password. Press '1' to Try Again or '0' Exit");
                 int authOrExit = scanner.nextInt();
@@ -173,8 +187,9 @@ public class MenuService {
         String name = scanner.nextLine();
         System.out.println("Enter your phone: ");
         String phone = scanner.nextLine();
-        Credentials credsOfNewClient = showLoginMessage(scanner);
-        Client newClient = clientsManagerSystem.createAClient(phone,name,credsOfNewClient.getLogin(), credsOfNewClient.getHashedPassword());
+        Credentials credOfNewClient = showLoginMessage(scanner);
+        Client newClient = clientsManagerSystem.createAClient
+                (phone,name, credOfNewClient.getLogin(), credOfNewClient.getHashedPassword());
         clientsManagerSystem.addAClient(newClient);
         System.out.println("You successfully signed up");
         return newClient;
@@ -208,13 +223,16 @@ public class MenuService {
     }
 
     public void createAndAddSomeClients(){
-       Client client1 = clientsManagerSystem.createAClient("85948572480", "Paul", "paledmi", "123456" );
+       Client client1 = clientsManagerSystem.createAClient
+               ("85948572480", "Paul", "paledmi", "123456" );
        clientsManagerSystem.addAClient(client1);
 
-        Client client2 = clientsManagerSystem.createAClient("99999999999", "Alex", "alebuale", "qwerty" );
+        Client client2 = clientsManagerSystem.createAClient
+                ("99999999999", "Alex", "alebuale", "qwerty" );
         clientsManagerSystem.addAClient(client1);
 
-        Client client3 = clientsManagerSystem.createAClient("48394058678L", "Mary", "marbule", "zxcvbn" );
+        Client client3 = clientsManagerSystem.createAClient
+                ("48394058678L", "Mary", "marbule", "zxcvbn" );
         clientsManagerSystem.addAClient(client1);
     }
 }

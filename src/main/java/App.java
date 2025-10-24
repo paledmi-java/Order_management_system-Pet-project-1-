@@ -15,52 +15,33 @@ public class App {
         boolean isExit = false;
 
         do {
+            assert client != null;
             if (!client.isAuthorised()){
                 menuService.showMainMenuForUser();
             } else {
-                menuService.showMainMenuForClient();
+                menuService.showMainMenuForClient(); // MAKE CHOSE OPTIONS FOR AUTHORISED CLIENT
             }
 
             int firstOption = scanner.nextInt();
+            scanner.nextLine();
 
             switch (firstOption) {
 
                 case 1:
                     boolean isExitFromFoodMenu = false;
                     do {
-                        menuService.showWholefoodMenu();
 
-                        int choseAnItemOption = scanner.nextInt();
-                        scanner.nextLine();
+                        Item chosenItem = menuService.showWholefoodMenu(client, scanner);
 
-                        MenuResult nextMenu = menuService.showSingleItem(client, choseAnItemOption);
-
-                        if (nextMenu.isExit() && nextMenu.getItem() == null){
+                        if (chosenItem == null){
                             isExitFromFoodMenu = true;
 
-                        } else if (!nextMenu.isExit() && nextMenu.getItem() != null){
-
-                            menuService.putInBasketMessage();
-
-                            int putItBasketOption = scanner.nextInt();
-                            scanner.nextLine();
-
-                            MenuService.PutInBasketResult putInBasketResult =
-                                    menuService.getPutInCartResult(client, nextMenu.getItem(), putItBasketOption);
-
-                            if (putInBasketResult == MenuService.PutInBasketResult.NEED_AUTH){
-                                   Client clientAuthorised = menuService.startLoginProcess(client, scanner);
-                                   if(clientAuthorised != null){
-                                       client = clientAuthorised;
-                                   }
-                                   menuService.addItemInCart(client, nextMenu.getItem());
-                                menuService.showSuccessPutInBasketMessage();
-                            } else if (putInBasketResult == MenuService.PutInBasketResult.ADDED){
-                                menuService.addItemInCart(client, nextMenu.getItem());
-                                menuService.showSuccessPutInBasketMessage();
-                                // NEED TO FINISH
-                            } else if(putInBasketResult == MenuService.PutInBasketResult.BACK_TO_MENU){
+                        } else {
+                            Client newClient = menuService.putInBasketMenu(client, chosenItem, scanner);
+                            if (newClient == null){
                                 isExitFromFoodMenu = true;
+                            } else{
+                                client = newClient;
                             }
                         }
                     }  while (!isExitFromFoodMenu);
@@ -88,6 +69,7 @@ public class App {
 
                 case 3: {
 
+                    break;
                 }
 
                 case 4: {
@@ -96,7 +78,7 @@ public class App {
                 }
 
                 case 5: {
-                    menuService.startRegistrationProcess(scanner);
+                    client = menuService.startRegistrationProcess(scanner);
                     break;
                 }
 
