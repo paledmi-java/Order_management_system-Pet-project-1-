@@ -44,6 +44,9 @@ public class ProductsManagerSystem implements ProductsManageable{
         }
     }
 
+
+
+
     public int getItemIdCounter() {
         return itemIdCounter;
     }

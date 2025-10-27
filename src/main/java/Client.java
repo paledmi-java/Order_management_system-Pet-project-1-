@@ -12,7 +12,7 @@ public class Client {
     private boolean isAuthorised;
     private LocalDate dateOfBirth;
     private String phoneNumber;
-    private final ArrayList<Item> bucket = new ArrayList<>();
+    private final ArrayList<Item> basket = new ArrayList<>();
     private String email;
     private ClientAddress address;
     boolean isAdvertisable;
@@ -128,8 +128,8 @@ public class Client {
         return favouriteItems;
     }
 
-    public ArrayList<Item> getBucket() {
-        return bucket;
+    public ArrayList<Item> getBasket() {
+        return basket;
     }
 
     public void setClientId(int customerId) {

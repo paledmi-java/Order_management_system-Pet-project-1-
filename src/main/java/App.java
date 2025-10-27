@@ -10,16 +10,15 @@ public class App {
         menuService.createAndAddSomeClients();
 
         Client client = new Client();
-        Random random = new Random();
         Scanner scanner = new Scanner(System.in);
         boolean isExit = false;
 
         do {
-            assert client != null;
+//            assert client != null;
             if (!client.isAuthorised()){
                 menuService.showMainMenuForUser();
             } else {
-                menuService.showMainMenuForClient(); // MAKE CHOSE OPTIONS FOR AUTHORISED CLIENT
+                menuService.showMainMenuForClient();
             }
 
             int firstOption = scanner.nextInt();
@@ -38,9 +37,7 @@ public class App {
 
                         } else {
                             Client newClient = menuService.putInBasketMenu(client, chosenItem, scanner);
-                            if (newClient == null){
-                                isExitFromFoodMenu = true;
-                            } else{
+                            if (newClient != null){
                                 client = newClient;
                             }
                         }
@@ -49,44 +46,63 @@ public class App {
 
 
                 case 2:
-                    boolean isExitFromPromos = false;
-                    do {
-                        System.out.println("Chose a promo:\n" +
-                                "1) Discount\n" +
-                                "2) Bigger discount\n" +
-                                "3) The biggest discount!\n" +
-                                "0) Exit");
-                        int promoOption = scanner.nextInt();
-                        switch (promoOption) {
-                            case 1 -> System.out.print("BUY OUR STUFF WITH A DISCOUNT OF 0.001%!!!\n");
-                            case 2 -> System.out.print("BUY OUR STUFF WITH A DISCOUNT OF 0.002%!!!\n");
-                            case 3 -> System.out.print("BUY OUR STUFF WITH A DISCOUNT OF 0.003%!!!\n");
-                            case 0 -> isExitFromPromos = true;
-                            default -> System.out.println("Please chose the right option\n");
-                        }
-                    } while (!isExitFromPromos);
-
+                    menuService.startPromosScreen(scanner);
+                    break;
 
                 case 3: {
-
+                    menuService.startSearchProcess(client, scanner);
                     break;
                 }
 
                 case 4: {
-                    client = menuService.startLoginProcess(client, scanner);
+                    if(!client.isAuthorised()){
+                        Client newClient = menuService.startLoginProcess(client, scanner);
+                        if(newClient != null){
+                            client = newClient;
+                        } else {
+                            break;
+                        }
+                    } else{
+                        menuService.getBasketMenu(client, scanner);
+                    }
                     break;
                 }
 
                 case 5: {
-                    client = menuService.startRegistrationProcess(scanner);
+                    // CHOSE OPTIONS FOR AUTHORISED CLIENT IS REPEATING THE CODE
+                    if(!client.isAuthorised()) {
+                        Client newClient = menuService.startRegistrationProcess(scanner);
+                        if(newClient != null){
+                            client = newClient;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        client = menuService.startLogOutProcess(client);
+                        System.out.println("You're successfully logged out.");
+                    }
                     break;
                 }
 
-//                case 6: {
-//                    if(){
-//
-//                    }
-//                }
+                case 6: {
+                    if(!client.isAuthorised()){
+                        menuService.getBasketMenu(client, scanner);
+                    } else {
+                        System.out.println("Please chose the right option\n");
+                        break;
+                    }
+                    break;
+                }
+
+                case 0: {
+                    isExit = true;
+                    break;
+                }
+
+                default:{
+                    System.out.println("Please chose the right option\n");
+                    break;
+                }
 
             }
         } while (!isExit);

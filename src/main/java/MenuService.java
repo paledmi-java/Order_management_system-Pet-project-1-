@@ -11,11 +11,11 @@ public class MenuService {
         System.out.println("Chose option number:\n" +
                 "1) Menu\n" +
                 "2) Promotions\n" +
-                "3) Search\n" + //IS NOT WORKING
+                "3) Search\n" +
                 "4) Log in\n" +
                 "5) Sign up\n" +
                 "6) Show my basket\n" +
-                "7) Exit");
+                "0) Exit");
     }
 
     public void showMainMenuForClient(){
@@ -24,7 +24,56 @@ public class MenuService {
                 "2) Promotions\n" +
                 "3) Search\n" +
                 "4) Show my basket\n" +
-                "5) Exit");
+                "5) Log out\n" +
+                "6) Exit\n");
+    }
+
+    public void startPromosScreen(Scanner scanner){
+        boolean isExitFromPromos = false;
+        do {
+            System.out.println("Chose a promo:\n" +
+                    "1) Discount\n" +
+                    "2) Bigger discount\n" +
+                    "3) The biggest discount!\n" +
+                    "0) Exit");
+            int promoOption = scanner.nextInt();
+            switch (promoOption) {
+                case 1 -> System.out.print("BUY OUR STUFF WITH A DISCOUNT OF 0.001%!!!\n");
+                case 2 -> System.out.print("BUY OUR STUFF WITH A DISCOUNT OF 0.002%!!!\n");
+                case 3 -> System.out.print("BUY OUR STUFF WITH A DISCOUNT OF 0.003%!!!\n");
+                case 0 -> isExitFromPromos = true;
+                default -> System.out.println("Please chose the right option\n");
+            }
+        } while (!isExitFromPromos);
+    }
+
+    // FINISH GET BASKET MENU
+    public void getBasketMenu(Client client, Scanner scanner){
+        boolean isBasketExit = false;
+        do {
+            if(!clientsManagerSystem.getBasket(client).isEmpty()) {
+                clientsManagerSystem.printTotalBasketPrice(client);
+                // NEED THIS MESSAGE TO PRINT BEFORE BASKET CONTAINS
+                System.out.println("Chose a number of item to remove, 1 to continue purchase, or 0 to go back");
+                int basketOption = scanner.nextInt();
+                scanner.nextLine();
+                if (basketOption > 0 && basketOption <= client.getBasket().size()) {
+                    client.getBasket().remove(basketOption-1);
+                } else if (basketOption == 0) {
+                    isBasketExit = true;
+                } else if (basketOption == 1) {
+                    this.placingAnOrder();
+                } else
+                    System.out.println("Please chose the right option");
+            } else {
+                System.out.println("Your basket is empty, please add Items first.");
+                isBasketExit = true;
+            }
+        } while (!isBasketExit);
+    }
+
+    public void placingAnOrder(){
+
     }
 
     public Item showWholefoodMenu(Client client, Scanner scanner) {
@@ -38,7 +87,6 @@ public class MenuService {
             int choseAnItemOption = scanner.nextInt();
             scanner.nextLine();
 
-            // ИЗМЕНИТЬ NULL POINT EXCEPTION ПРИ ВЫБОРЕ БЛЮДА!!!
             if (choseAnItemOption > 0 && choseAnItemOption <= productsManagerSystem.getAllItemsList().size()) {
                 theItem = productsManagerSystem.getAllItemsList().get(choseAnItemOption - 1);
                 System.out.println(theItem.itemFormat(Item.itemFormatType.PUBLIC) + "\n");
@@ -49,7 +97,7 @@ public class MenuService {
                 isExitFromFoodMenu = true;
 
             } else {
-                System.out.println("Please chose the right number");
+                System.out.println("Please chose the right option");
                 theItem = null;
             }
         } while (!isExitFromFoodMenu);
@@ -71,7 +119,7 @@ public class MenuService {
             System.out.println("Please log in or sign up first");
             newClient = this.startLoginProcess(client, scanner);
             if(newClient != null){
-                this.addItemInCart(client, theItem);
+                this.addItemInCart(newClient, theItem);
             }
         } else if (choseAnItemOption == 2){
             newClient = null;
@@ -83,15 +131,22 @@ public class MenuService {
     }
 
     public void startSearchProcess(Client client, Scanner scanner){
-        System.out.println("Enter name of the item: ");
-        String itemName = scanner.nextLine();
-        Item searchItem = productsManagerSystem.getSearchOfItemList().get(itemName);
-        if( searchItem != null){
-            System.out.println(searchItem.itemFormat(Item.itemFormatType.PUBLIC));
-            putInBasketMenu(client, searchItem, scanner);
-        } else {
-            System.out.println("The item is not found. Try again or type 0 to exit.");
-        }
+        boolean isExitFromSearch = false;
+        do {
+            System.out.println("Enter name of the item or 0 to go back: ");
+            String itemName = scanner.nextLine();
+            if (!itemName.equals("0")){
+                Item searchItem = productsManagerSystem.getSearchOfItemList().get(itemName);
+                if (searchItem != null) {
+                    System.out.println(searchItem.itemFormat(Item.itemFormatType.PUBLIC));
+                    putInBasketMenu(client, searchItem, scanner);
+                } else {
+                    System.out.println("The item is not found.");
+                }
+            } else{
+                isExitFromSearch = true;
+            }
+        } while (!isExitFromSearch);
     }
 
     public enum PutInBasketResult {
@@ -105,7 +160,7 @@ public class MenuService {
 //    }
 
     public void addItemInCart(Client client, Item theItem){
-        client.getBucket().add(theItem);
+        client.getBasket().add(theItem);
         System.out.println("The item added to your kart");
     }
 
@@ -157,11 +212,13 @@ public class MenuService {
                 client = this.clientsManagerSystem.getAllClients().get(authResult.getCredentials().getClientId());
                 System.out.println("Authorisation success");
                 isExitFromLoginMenu = true;
+
             } else if(authResult.getAuthorisationResultEnum() == AuthorisationResultEnum.NEED_REGISTRATION){
 
                 System.out.println("You're not in system, please sign up first\n" +
                         "Press 1 to sign up or 0 to exit");
 
+                // IF 0 THEN THROWS NULL POINT EXCEPTION!!! BECAUSE NULL IS RETURNING!
                 int signUpOption = scanner.nextInt();
                 scanner.nextLine();
                 boolean signUpExit = false;
@@ -181,6 +238,10 @@ public class MenuService {
         return client;
     }
 
+    public Client startLogOutProcess(Client client){
+        client = new Client();
+        return client;
+    }
 
     public Client startRegistrationProcess(Scanner scanner){
         System.out.println("Enter your name: ");

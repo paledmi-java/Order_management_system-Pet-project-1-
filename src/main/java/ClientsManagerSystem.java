@@ -1,4 +1,5 @@
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -28,6 +29,27 @@ public class ClientsManagerSystem implements ClientsManageable {
     public void removeAClient(Client client) {
         allClients.remove(client.getClientId());
         allClientEmails.remove(client.getEmail());
+    }
+
+    public ArrayList<Item> getBasket(Client client){
+        int i = 1;
+        ArrayList<Item> basket = client.getBasket();
+        for(Item item : basket){
+            System.out.println(i + ") " + item);
+            i++;
+        }
+        return basket;
+    }
+
+    public void printTotalBasketPrice(Client client){
+        int i = 1;
+        ArrayList<Item> basket = client.getBasket();
+        int totalPrice = 0;
+        for(Item item : basket){
+            totalPrice += item.getPrice();
+            i++;
+        }
+        System.out.println("Total price: " + totalPrice + "rub");
     }
 
 
