@@ -2,8 +2,8 @@ import java.util.Objects;
 
 public class Item implements Comparable<Item>{
     private int itemId;
-    private String name;
-    private String type;
+    private String itemName;
+    private String typeOfItem;
     private String ingredients;
     private int amountOfPieces;
     private int price;
@@ -20,12 +20,12 @@ public class Item implements Comparable<Item>{
     }
 
 
-    public Item(int itemId, String name, String type, String ingredients, int amountOfPieces, int price, String description,
+    public Item(int itemId, String itemName, String typeOfItem, String ingredients, int amountOfPieces, int price, String description,
                 int mass, int kcal, String imageURL, boolean hasMultiComp,
                 boolean isChangeable, boolean isAvailable) {
         this.itemId = itemId;
-        this.name = name;
-        this.type = type;
+        this.itemName = itemName;
+        this.typeOfItem = typeOfItem;
         this.ingredients = ingredients;
         this.amountOfPieces = amountOfPieces;
         this.price = price;
@@ -46,40 +46,40 @@ public class Item implements Comparable<Item>{
             case FULL -> String.format("Item: Id-%d, Name: %s, Type: %s, Ingredients: %s, Amount Of Pieces: %d, " +
                             "Price: %d, Mass: %d, Kcal: %d, Has multiple components: %b, " +
                             "Is changeable: %b, Is available: %b",
-                    itemId, name, type, ingredients, amountOfPieces, price, mass, kcal,
+                    itemId, itemName, typeOfItem, ingredients, amountOfPieces, price, mass, kcal,
                     hasMultiComp, isChangeable, isAvailable);
             case SHORT -> String.format("%s, %d pieces, " +
                             " Mass: %d gr, Price: %d rub",
-                    name, amountOfPieces, mass, price);
+                    itemName, amountOfPieces, mass, price);
             case PUBLIC -> String.format("Name: %s, Type: %s, Ingredients: %s, Amount Of Pieces: %d, " +
                             "Price: %d, Mass: %d, Kcal: %d" ,
-                    name, type, ingredients, amountOfPieces, price, mass, kcal);
+                    itemName, typeOfItem, ingredients, amountOfPieces, price, mass, kcal);
         };
     }
 
     public String toString(){
         return String.format("%s, %d pieces, " +
                         " Mass: %d gr, Price: %d rub",
-                name, amountOfPieces, mass, price);
+                itemName, amountOfPieces, mass, price);
     }
 
 
 
     @Override
     public int compareTo(Item o) {
-        return name.compareTo(o.name);
+        return itemName.compareTo(o.itemName);
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return itemId == item.itemId && Objects.equals(name, item.name);
+        return itemId == item.itemId && Objects.equals(itemName, item.itemName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(itemId, name);
+        return Objects.hash(itemId, itemName);
     }
 
 
@@ -92,12 +92,12 @@ public class Item implements Comparable<Item>{
         this.amountOfPieces = amountOfPieces;
     }
 
-    public String getType() {
-        return type;
+    public String getTypeOfItem() {
+        return typeOfItem;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTypeOfItem(String typeOfItem) {
+        this.typeOfItem = typeOfItem;
     }
 
     public int getItemId() {
@@ -108,12 +108,12 @@ public class Item implements Comparable<Item>{
         this.itemId = itemId;
     }
 
-    public String getName() {
-        return name;
+    public String getItemName() {
+        return itemName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 
     public String getIngredients() {

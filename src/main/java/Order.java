@@ -1,40 +1,63 @@
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 public class Order {
+
     private int orderId;
     private Client customer;
     private int price;
-    private ArrayList<Item> bucket; // IS NEEDED???
-    private boolean isDeliverable;
     private boolean isDeliveryFree;
     private ClientAddress orderAddress;
-    private String status;
+    private OrderStatus status;
     private String commentary;
     private LocalDateTime createdAt;
     private LocalDateTime deliveredAt;
-    private LocalDateTime requiredDeliveryTime;
-    private boolean isBonusUsed;
+    private Duration estimatedDeliveryTime;
+    private boolean areBonusesUsed;
     private boolean isPromoCodeUsed;
 
-    public Order(int orderId, Client customer, int price, ArrayList<Item> bucket,
-                 boolean isDeliveryFree, boolean isDeliverable, ClientAddress orderAddress,
-                 String status, LocalDateTime createdAt,
-                 LocalDateTime requiredDeliveryTime, boolean isBonusUsed,
+    public enum OrderStatus{
+        ACTIVE,
+        DECLINED,
+        DELIVERED,
+        UNPAID
+    }
+
+    public Order(int orderId, Client client, int price, String commentary,
+                 boolean isDeliveryFree, ClientAddress orderAddress,
+                 OrderStatus status, LocalDateTime createdAt,
+                 Duration estimatedDeliveryTime, boolean areBonusesUsed,
                  boolean isPromoCodeUsed) {
         this.orderId = orderId;
-        this.customer = customer;
+        this.customer = client;
         this.price = price;
-        this.bucket = bucket;
+        this.commentary = commentary;
         this.isDeliveryFree = isDeliveryFree;
-        this.isDeliverable = isDeliverable;
         this.orderAddress = orderAddress;
         this.status = status;
         this.commentary = "";
         this.createdAt = createdAt;
-        this.requiredDeliveryTime = requiredDeliveryTime;
-        this.isBonusUsed = isBonusUsed;
+        this.estimatedDeliveryTime = estimatedDeliveryTime;
+        this.areBonusesUsed = areBonusesUsed;
         this.isPromoCodeUsed = isPromoCodeUsed;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "orderId=" + orderId +
+                ", customer=" + customer +
+                ", price=" + price +
+                ", isDeliveryFree=" + isDeliveryFree +
+                ", orderAddress=" + orderAddress +
+                ", status=" + status +
+                ", commentary='" + commentary + '\'' +
+                ", createdAt=" + createdAt +
+                ", deliveredAt=" + deliveredAt +
+                ", estimatedDeliveryTime=" + estimatedDeliveryTime +
+                ", areBonusesUsed=" + areBonusesUsed +
+                ", isPromoCodeUsed=" + isPromoCodeUsed +
+                '}';
     }
 
     public int getOrderId() {
@@ -61,14 +84,6 @@ public class Order {
         this.price = price;
     }
 
-    public boolean isDeliverable() {
-        return isDeliverable;
-    }
-
-    public void setDeliverable(boolean deliverable) {
-        isDeliverable = deliverable;
-    }
-
     public boolean isDeliveryFree() {
         return isDeliveryFree;
     }
@@ -85,11 +100,11 @@ public class Order {
         this.orderAddress = orderAddress;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
@@ -101,20 +116,20 @@ public class Order {
         isPromoCodeUsed = promoCodeUsed;
     }
 
-    public boolean isBonusUsed() {
-        return isBonusUsed;
+    public boolean isAreBonusesUsed() {
+        return areBonusesUsed;
     }
 
-    public void setBonusUsed(boolean bonusUsed) {
-        isBonusUsed = bonusUsed;
+    public void setAreBonusesUsed(boolean areBonusesUsed) {
+        this.areBonusesUsed = areBonusesUsed;
     }
 
-    public LocalDateTime getRequiredDeliveryTime() {
-        return requiredDeliveryTime;
+    public Duration getEstimatedDeliveryTime() {
+        return estimatedDeliveryTime;
     }
 
-    public void setRequiredDeliveryTime(LocalDateTime requiredDeliveryTime) {
-        this.requiredDeliveryTime = requiredDeliveryTime;
+    public void setEstimatedDeliveryTime(Duration estimatedDeliveryTime) {
+        this.estimatedDeliveryTime = estimatedDeliveryTime;
     }
 
     public LocalDateTime getDeliveredAt() {

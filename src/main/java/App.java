@@ -1,17 +1,36 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Random;
 import java.util.Scanner;
 
 public class App {
 
     public static void main(String[] args){
+        Random random = new Random();
+        DeliveryManagerSystem deliveryManagerSystem = new DeliveryManagerSystem();
         ClientsManagerSystem clientsManagerSystem = new ClientsManagerSystem();
-        MenuService menuService = new MenuService();
-        menuService.fillTheFoodMenu();
-        menuService.createAndAddSomeClients();
+        ProductsManagerSystem productsManagerSystem = new ProductsManagerSystem();
+        OrdersManagerSystem ordersManagerSystem = new OrdersManagerSystem();
+        MenuService menuService = new MenuService(random, productsManagerSystem, clientsManagerSystem,
+                deliveryManagerSystem, ordersManagerSystem);
+
+        deliveryManagerSystem.createSomeCouriers();
+        productsManagerSystem.fillTheFoodMenu();
+        clientsManagerSystem.createAndAddSomeClients();
+
+//        clientsManagerSystem.showAllClients();
 
         Client client = new Client();
         Scanner scanner = new Scanner(System.in);
         boolean isExit = false;
+
+        try (Connection connection = DriverManager.getConnection(DatabaseConnection.URL, DatabaseConnection.USER, DatabaseConnection.PASSWORD)) {
+            System.out.println("✅ Connection successful!\n");
+        } catch (SQLException e) {
+            System.out.println("❌ Connection failed!\n");
+            e.printStackTrace();
+        }
 
         do {
 //            assert client != null;
@@ -22,6 +41,7 @@ public class App {
             }
 
             int firstOption = scanner.nextInt();
+            // поменять на scanner.nextLine();
             scanner.nextLine();
 
             switch (firstOption) {
@@ -63,7 +83,8 @@ public class App {
                             break;
                         }
                     } else{
-                        menuService.getBasketMenu(client, scanner);
+                        menuService.getBasketMenu(client, scanner,
+                                deliveryManagerSystem, ordersManagerSystem);
                     }
                     break;
                 }
@@ -86,7 +107,7 @@ public class App {
 
                 case 6: {
                     if(!client.isAuthorised()){
-                        menuService.getBasketMenu(client, scanner);
+                        menuService.getBasketMenu(client, scanner, deliveryManagerSystem, ordersManagerSystem);
                     } else {
                         System.out.println("Please chose the right option\n");
                         break;

@@ -1,5 +1,6 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 
 public class Client {
@@ -14,7 +15,8 @@ public class Client {
     private String phoneNumber;
     private final ArrayList<Item> basket = new ArrayList<>();
     private String email;
-    private ClientAddress address;
+    private ClientAddress defaultAddress;
+    private final ArrayList<ClientAddress> clientAddresses = new ArrayList<>();
     boolean isAdvertisable;
     boolean isProfileComplete;
     boolean isOnlineCheckOn;
@@ -23,12 +25,12 @@ public class Client {
     private LinkedHashSet<Item> favouriteItems;
     private ArrayList<ClientAddress> addresses;
 
-
     public Client(){
         isAuthorised = false;
     }
 
     public Client(int clientId, String phoneNumber, String name, String login, String password) {
+        this.clientId = clientId;
         this.phoneNumber = phoneNumber;
         this.name = name;
         this.login = login;
@@ -39,8 +41,12 @@ public class Client {
         this.isAdvertisable = true;
         this.isOnlineCheckOn = true;
         this.bonusesAmount = 0;
-//        ordersHistory = new LinkedHashSet<>();
-//        favouriteItems = new LinkedHashSet<>();
+        ordersHistory = new LinkedHashSet<>();
+        favouriteItems = new LinkedHashSet<>();
+    }
+
+    public String toString(){
+        return String.format("ID: %d, Name: %s", clientId, name);
     }
 
 
@@ -72,6 +78,10 @@ public class Client {
         return isAuthorised;
     }
 
+    public ArrayList<ClientAddress> getClientAddresses() {
+        return clientAddresses;
+    }
+
     public void setAuthorised(boolean authorised) {
         isAuthorised = authorised;
     }
@@ -100,8 +110,8 @@ public class Client {
         return email;
     }
 
-    public ClientAddress getAddress() {
-        return address;
+    public ClientAddress getDefaultAddress() {
+        return defaultAddress;
     }
 
     public boolean isAdvertisable() {
@@ -156,8 +166,8 @@ public class Client {
         this.email = email;
     }
 
-    public void setAddress(ClientAddress address) {
-        this.address = address;
+    public void setDefaultAddress(ClientAddress defaultAddress) {
+        this.defaultAddress = defaultAddress;
     }
 
     public void setAdvertisable(boolean advertisable) {

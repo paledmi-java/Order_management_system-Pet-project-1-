@@ -25,7 +25,7 @@ public class ClientInterfaceSystem implements ClientInterfaceManageable{
 
     @Override
     public void changeAddress(ClientAddress changeableAddress) {
-        client.setAddress(changeableAddress);
+        client.setDefaultAddress(changeableAddress);
     }
 
     @Override

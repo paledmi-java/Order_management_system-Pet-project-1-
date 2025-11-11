@@ -1,11 +1,29 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 public class MenuService {
-    private final Random random = new Random();
-    private final ProductsManagerSystem productsManagerSystem = new ProductsManagerSystem();
-    private final ClientsManagerSystem clientsManagerSystem = new ClientsManagerSystem();
-//    private final Scanner scanner = new Scanner(System.in);
+    private Random random;
+    private ProductsManagerSystem productsManagerSystem;
+    private ClientsManagerSystem clientsManagerSystem;
+    private DeliveryManagerSystem deliveryManagerSystem;
+    private OrdersManagerSystem ordersManagerSystem;
+
+    public MenuService(Random random, ProductsManagerSystem productsManagerSystem,
+                       ClientsManagerSystem clientsManagerSystem,
+                       DeliveryManagerSystem deliveryManagerSystem,
+                       OrdersManagerSystem ordersManagerSystem) {
+
+        this.random = random;
+        this.productsManagerSystem = productsManagerSystem;
+        this.clientsManagerSystem = clientsManagerSystem;
+        this.deliveryManagerSystem = deliveryManagerSystem;
+        this.ordersManagerSystem = ordersManagerSystem;
+    }
 
     public void showMainMenuForUser(){
         System.out.println("Chose option number:\n" +
@@ -48,22 +66,21 @@ public class MenuService {
     }
 
     // FINISH GET BASKET MENU
-    public void getBasketMenu(Client client, Scanner scanner){
+    public void getBasketMenu(Client client, Scanner scanner,
+                              DeliveryManagerSystem deliveryManagerSystem, OrdersManagerSystem ordersManagerSystem){
         boolean isBasketExit = false;
         do {
             if(!clientsManagerSystem.getBasket(client).isEmpty()) {
-                clientsManagerSystem.printTotalBasketPrice(client);
+                int totalPrice = clientsManagerSystem.getTotalBasketPrice(client);
                 // NEED THIS MESSAGE TO PRINT BEFORE BASKET CONTAINS
-                System.out.println("Chose a number of item to remove, 1 to continue purchase, or 0 to go back");
+                System.out.println("Chose a number of item to remove, 0 to continue purchase");
                 int basketOption = scanner.nextInt();
                 scanner.nextLine();
                 if (basketOption > 0 && basketOption <= client.getBasket().size()) {
-                    client.getBasket().remove(basketOption-1);
+                    client.getBasket().remove(basketOption - 1);
                 } else if (basketOption == 0) {
-                    isBasketExit = true;
-                } else if (basketOption == 1) {
-                    this.placingAnOrder();
-                } else
+                    this.placingAnOrder(client, totalPrice, scanner, deliveryManagerSystem, ordersManagerSystem);
+                }
                     System.out.println("Please chose the right option");
             } else {
                 System.out.println("Your basket is empty, please add Items first.");
@@ -72,9 +89,175 @@ public class MenuService {
         } while (!isBasketExit);
     }
 
-    public void placingAnOrder(){
-
+    public ClientAddress addNewAddressProcess(Client client, Scanner scanner){
+        boolean isExit = false;
+        ClientAddress clientNewAddress;
+        do {
+            System.out.println("Please type an address for your delivery:");
+            System.out.println("Enter name of your city: ");
+            String city = scanner.nextLine();
+            System.out.println("Enter name of the street: ");
+            String street = scanner.nextLine();
+            System.out.println("Enter your house number: ");
+            String houseNumber = scanner.nextLine();
+            System.out.println("Enter number of your apartment: ");
+            String apartment = scanner.nextLine();
+            clientNewAddress = new ClientAddress(city, street, houseNumber, apartment);
+            ArrayList<ClientAddress> addresses = client.getClientAddresses();
+            if (addresses.contains(clientNewAddress)) {
+                System.out.println("This address already exists. Press enter to add a new address or type 0 to go back");
+                String option = scanner.nextLine();
+                    if (option.equals("0")){
+                       isExit = true;
+                    }
+            }else{
+                addresses.add(clientNewAddress);
+                client.setDefaultAddress(clientNewAddress);
+                System.out.println("The address is successfully added.");
+                isExit = true;
+            }
+        } while (!isExit);
+        return clientNewAddress;
     }
+
+    public ClientAddress choseAnAddressProcess(Client client, Scanner scanner) {
+        boolean isExit = false;
+        ClientAddress chosenAddress;
+        ArrayList<ClientAddress> addresses = client.getClientAddresses();
+        do {
+            if (addresses.isEmpty()) {
+                System.out.println("You don't have delivery addresses, please add one.");
+                chosenAddress = addNewAddressProcess(client, scanner);
+            } else {
+                System.out.println("Please chose an address or 0 to add a new address:");
+                System.out.println(addresses);
+                int addressOption = scanner.nextInt();
+                scanner.nextLine();
+                if (addressOption > 0 && addressOption <= addresses.size() - 1) {
+                    chosenAddress = addresses.get(addressOption);
+                    isExit = true;
+                } else if (addressOption == 0) {
+                    chosenAddress = addNewAddressProcess(client, scanner);
+                    isExit = true;
+                } else {
+                    System.out.println("Please, chose the right option");
+                    chosenAddress = null;
+                }
+            }
+        } while (!isExit);
+        return chosenAddress;
+    }
+
+    public LocalDateTime choseDeliveryTimeProcess(Scanner scanner){
+        System.out.println("Please chose delivery time:\n" +
+                "1) The Fastest (1 hour)\n" +
+                "2) To a certain time");
+        int option = scanner.nextInt();
+        scanner.nextLine();
+
+        if (option == 1){
+            return LocalDateTime.now().plusHours(1);
+
+        } else if(option == 0){
+            System.out.println("Please enter time for today delivery in format HH:mm:");
+            String inputTime = scanner.nextLine();
+
+            LocalTime chosenTime = LocalTime.parse(inputTime, DateTimeFormatter.ofPattern("HH:mm"));
+            return LocalDateTime.of(LocalDate.now(), chosenTime);
+        } else {
+            System.out.println("Please chose the right option.");
+            return null;
+        }
+    }
+
+    public boolean showBonusesMessage(Client client, Scanner scanner){
+        boolean isExit = false;
+        boolean areBonusesUsed;
+        do {
+            if (client.getBonusesAmount() != 0) {
+                System.out.println("Would you like to use your bonuses? 1 bonus = 1 ruble.\n" +
+                        "You have " + client.getBonusesAmount() + " bonuses." +
+                        "1) Yes\n" +
+                        "2) No");
+                int option = scanner.nextInt();
+                scanner.nextLine();
+                if (option == 1) {
+                    areBonusesUsed = true;
+                    isExit = true;
+                } else if (option == 0) {
+                    areBonusesUsed = false;
+                    isExit = true;
+                } else {
+                    System.out.println("Please chose the right option.");
+                    areBonusesUsed = false;
+                }
+            } else {
+                areBonusesUsed = false;
+            }
+        } while (!isExit);
+        return areBonusesUsed;
+    }
+
+    public String startCommentaryMessage(Scanner scanner){
+        System.out.println("Please enter your commentary: ");
+        return scanner.nextLine();
+    }
+
+
+
+
+    public boolean startPromoCodeMessage(Scanner scanner, OrdersManagerSystem ordersManagerSystem){
+        boolean isExit = false;
+        boolean isPromoCodeUsed;
+        do {
+            System.out.println("Enter promo code, or type 0 if you don't have one:");
+            String promoCode = scanner.nextLine();
+
+            if(promoCode.equals("0")){
+                isExit = true;
+                isPromoCodeUsed = false;
+            } else if(ordersManagerSystem.getPromoCodes().containsKey(promoCode)){
+                System.out.println("Promo code is applied!");
+                isPromoCodeUsed = true;
+                isExit = true;
+            } else {
+                System.out.println("Promo code doesn't exist");
+                isPromoCodeUsed = false;
+            }
+        } while (!isExit);
+
+        return isPromoCodeUsed;
+    }
+
+    public void placingAnOrder(Client client, int totalPrice, Scanner scanner,
+                               DeliveryManagerSystem deliveryManagerSystem, OrdersManagerSystem ordersManagerSystem){
+        System.out.println("Placing an order\n");
+        ClientAddress address = choseAnAddressProcess(client, scanner);
+        LocalDateTime chosenTime = choseDeliveryTimeProcess(scanner);
+        boolean areBonusesUsed = showBonusesMessage(client, scanner);
+        boolean isPromoCodeUsed = startPromoCodeMessage(scanner, ordersManagerSystem);
+        String commentary = startCommentaryMessage(scanner);
+        Order newOrder = ordersManagerSystem.createAnOrder(client, totalPrice, commentary, address,
+                chosenTime, areBonusesUsed, isPromoCodeUsed);
+
+        // ПОДСТАВИТЬ НОВУЮ РЕАЛИЗАЦИЮ СИМУЛЯЦИИ
+//        Order orderFinished = deliveryManagerSystem.startDeliverySimulation(newOrder, ordersManagerSystem);
+//        client.getOrdersHistory().add(orderFinished);
+    }
+
+    // Не создавать новые потоки внутри каждого вызова.
+    //Пусть у тебя будет один общий пул потоков (через ExecutorService), где будут работать курьеры.
+    //
+    //Сделай коллекции потокобезопасными:
+    //
+    //Очередь заказов → BlockingQueue<Order>
+    //
+    //Курьеры → CopyOnWriteArrayList<Courier> или ConcurrentHashMap<Integer, Courier>
+    //
+    //Назначение курьера и изменение статусов — синхронизировать,
+    //либо использовать synchronized, либо ReentrantLock вокруг этих операций.
+
+
 
     public Item showWholefoodMenu(Client client, Scanner scanner) {
         boolean isExitFromFoodMenu = false;
@@ -256,44 +439,4 @@ public class MenuService {
         return newClient;
     }
 
-
-    public void fillTheFoodMenu(){
-        Item item1 = productsManagerSystem.createAnItem("Roll Dragon", "Roll",
-                "Rice, Dragon", 8, 593,
-                "Roll made out of Dragon", 230, 237,
-                String.valueOf(random.nextInt(100000, 9999999)),
-                false, false, true );
-
-        productsManagerSystem.addAnItemToSystem(item1);
-
-        Item item2 = productsManagerSystem.createAnItem("Tempura Roll with eel",
-                "Tempura Roll", "Tempura, Rice, Eel", 8,
-                447, "Tempura Roll made out of eel", 330, 455,
-                String.valueOf(random.nextInt(100000, 9999999)),
-                false, false, true);
-
-        productsManagerSystem.addAnItemToSystem(item2);
-
-        Item item3 = productsManagerSystem.createAnItem("Salmon Roll with spicy mango sauce",
-                "Baked roll", "Salmon, Rice, Spicy sauce",
-                8, 556, "Baked Salmon Roll with spicy mango sauce",
-                456, 677,  String.valueOf(random.nextInt(100000, 9999999)),
-                false, false, true);
-
-        productsManagerSystem.addAnItemToSystem(item3);
-    }
-
-    public void createAndAddSomeClients(){
-       Client client1 = clientsManagerSystem.createAClient
-               ("85948572480", "Paul", "paledmi", "123456" );
-       clientsManagerSystem.addAClient(client1);
-
-        Client client2 = clientsManagerSystem.createAClient
-                ("99999999999", "Alex", "alebuale", "qwerty" );
-        clientsManagerSystem.addAClient(client1);
-
-        Client client3 = clientsManagerSystem.createAClient
-                ("48394058678L", "Mary", "marbule", "zxcvbn" );
-        clientsManagerSystem.addAClient(client1);
-    }
 }
