@@ -9,7 +9,7 @@ public class CouriersManagerApp {
         Scanner scanner = new Scanner(System.in);
         DeliveryManagerSystem deliveryManagerSystem = new DeliveryManagerSystem();
         int couriersCount = deliveryManagerSystem.createSomeCouriers();
-        deliveryManagerSystem.setCouriersCount(couriersCount);
+        deliveryManagerSystem.setExecutorThreads();
 
         ClientsManagerSystem clientsManagerSystem = new ClientsManagerSystem();
         ProductsManagerSystem productsManagerSystem = new ProductsManagerSystem();
@@ -27,7 +27,8 @@ public class CouriersManagerApp {
                             "1) Show all clients\n" +
                             "2) Show all couriers\n"+
                             "3) Add some orders\n" +
-                            "4) Show all orders");
+                            "4) Show all orders\n" +
+                            "5) Stop delivery simulation");
 
 
         ArrayList<Courier> couriers = deliveryManagerSystem.getCouriers();
@@ -35,9 +36,13 @@ public class CouriersManagerApp {
         int option = Integer.parseInt(input);
 
             if(option == 0){
-                deliveryManagerSystem.startSimForDeliveryApp(ordersManagerSystem);
-//                String input2 = scanner.nextLine();
-//                int goBackOption = Integer.parseInt(input);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        deliveryManagerSystem.startSimForDeliveryApp(ordersManagerSystem);
+                    }
+                }).start();
+
             } else if(option == 1){
                 clientsManagerSystem.showAllClients();
             } else if (option == 2) {
@@ -48,12 +53,14 @@ public class CouriersManagerApp {
                     System.out.println(couriers.get(option - 1));
                 }
             } else if (option == 3){
-                deliveryManagerSystem.createSomeCouriers();
+                deliveryManagerSystem.createSomeOrders(ordersManagerSystem, clients);
             } else if (option == 4){
-                for(Order order : ordersManagerSystem.getSortedOrdersById().values()){
+                for(Order order : ordersManagerSystem.getOrdersBlockingQueue()){
                     System.out.println(order);
                 }
-            }
+            } else if (option == 5){
+            deliveryManagerSystem.setRunning(false);
+        }
             else {
                 System.out.println("Please chose the right option.");
             }

@@ -1,3 +1,4 @@
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -6,21 +7,27 @@ import java.util.concurrent.*;
 
 public class DeliveryManagerSystem {
     private final ArrayList<Courier> couriers = new ArrayList<>();
-    private static int couriersCount;
     private static int courierId = 1;
+    private volatile boolean isRunning = true;
 
-    ExecutorService couriersWorkExecutor;
+    ScheduledExecutorService couriersWorkExecutor;
     BlockingQueue<Courier> freeCourierBlockingQueue = new LinkedBlockingQueue<>();
 
 
-    public void setCouriersCount(int count) {
-        couriersCount = count;
-        couriersWorkExecutor = Executors.newFixedThreadPool(couriersCount);
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(boolean running) {
+        isRunning = running;
+    }
+
+    public void setExecutorThreads() {
+        couriersWorkExecutor = Executors.newScheduledThreadPool(couriers.size());
     }
 
     public void addACourier(String name, Courier.CourierStatus courierStatus, Courier.CourierType courierType){
         Courier courier = new Courier( courierId++,  name, courierStatus, courierType);
-        couriersCount++;
         couriers.add(courier);
         freeCourierBlockingQueue.add(courier);
     }
@@ -32,64 +39,16 @@ public class DeliveryManagerSystem {
         }
     }
 
-    public synchronized Order startDeliverySimulation(Order order, OrdersManagerSystem ordersManagerSystem){
-        Thread threadSearch = new Thread(new Runnable() {
-            Courier courierFound;
-            @Override
-            public void run() {
-                ArrayList<Courier> couriers = getCouriers();
-                boolean courierIsFoud = false;
-                do {
-                    for (Courier courier : couriers){
-                        System.out.println("Searching for couriers...");
-                        if(courier.getCourierStatus() == Courier.CourierStatus.FREE){
-                            courierIsFoud = true;
-                            courierFound = courier;
-                            System.out.println("Courier " + courierFound.getName() +
-                                    " will deliver your order at " + order.getEstimatedDeliveryTime());
-                            courierFound.setCourierStatus(Courier.CourierStatus.DELIVERING);
-                            System.out.println(courierFound.getName() + " is delivering your order");
-                            try {
-                                Thread.sleep(60000);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                            System.out.println("Your order is delivered");
-                            courierFound.setCourierStatus(Courier.CourierStatus.FREE);
-                            order.setDeliveredAt(LocalDateTime.now());
-                            order.setStatus(Order.OrderStatus.DELIVERED);
-
-                        } else {
-                            System.out.println("Courier is not found yet. Please wait...");
-                            try {
-                                for(int i = 0; i<7; i++){
-                                    System.out.println("wait...");
-                                    Thread.sleep(1000);
-                                }
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    }
-                } while (!courierIsFoud);
-            }
-        }); threadSearch.start();
-        return order;
-    }
-
 
     public void createSomeOrders(OrdersManagerSystem ordersManagerSystem, HashMap<Integer, Client> clients) throws InterruptedException {
-        Order[] orders = ordersManagerSystem.createSomeOrders(clients.get(0), clients.get(1), clients.get(2));
-        for (Order order : orders) {
-            ordersManagerSystem.getOrdersBlockingQueue().put(order);
-        }
+        ordersManagerSystem.createSomeOrders(clients.get(0), clients.get(1), clients.get(2));
     }
 
 
     public Order searchAnOrder(OrdersManagerSystem ordersManagerSystem) {
-        Order foundOrder = null;
+        Order foundOrder;
         try {
-            foundOrder = ordersManagerSystem.getOrdersBlockingQueue().take();
+            foundOrder = ordersManagerSystem.getOrdersBlockingQueue().poll(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
 //            System.out.println("There are no orders yet...");
             throw new RuntimeException(e);
@@ -100,51 +59,71 @@ public class DeliveryManagerSystem {
 
     public Courier searchForACourier (Order order){
         Courier foundCourier = null;
-        try {
-            foundCourier = freeCourierBlockingQueue.take();
-        } catch (InterruptedException e) {
-//            System.out.println("There are no free couriers yet...");
-            throw new RuntimeException(e);
+        while (foundCourier == null) {
+            try {
+                foundCourier = freeCourierBlockingQueue.take();
+            } catch (InterruptedException e) {
+    //            System.out.println("There are no free couriers yet...");
+                throw new RuntimeException(e);
+            }
         }
         return foundCourier;
     }
 
-// ИСПРАВИТЬ ПО ПОСЛЕДНЕМУ СООБЩЕНИЮ НЕЙРОНКИ
     public void startSimForDeliveryApp(OrdersManagerSystem ordersManagerSystem){
-        while (true) {
-            Order foundOrder = searchAnOrder(ordersManagerSystem);
-            Courier foundCourier = searchForACourier(foundOrder);
-
-            couriersWorkExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    // ВЕРНО ЛИ???
-                    System.out.println("Courier " + foundCourier.getName() +
-                            " will deliver your order at " + foundOrder.getEstimatedDeliveryTime());
-                    foundCourier.setCourierStatus(Courier.CourierStatus.DELIVERING);
-                    System.out.println(foundCourier.getName() + " is delivering your order");
-                    try {
-                        Thread.sleep(6000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    System.out.println("Your order is delivered");
-                    foundCourier.setCourierStatus(Courier.CourierStatus.FREE);
-                    foundOrder.setDeliveredAt(LocalDateTime.now());
-                    foundOrder.setStatus(Order.OrderStatus.DELIVERED);
-                }
-            });
+        long delayInSeconds = ThreadLocalRandom.current().nextLong(5, 21);
+        if (delayInSeconds < 1){
+            delayInSeconds = 1;
         }
+
+        while (isRunning) {
+            final Order foundOrder = searchAnOrder(ordersManagerSystem);
+            if (foundOrder != null) {
+                final Courier foundCourier = searchForACourier(foundOrder);
+//                long delay = foundOrder.getEstimatedDeliveryTime().toMillis()/10;
+                couriersWorkExecutor.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        System.out.println("Courier " + foundCourier.getName() +
+                                " will deliver " + foundOrder.getCustomer() + " order at " + foundOrder.getEstimatedDeliveryTime());
+                        foundCourier.setCourierStatus(Courier.CourierStatus.DELIVERING);
+                        System.out.println(foundCourier.getName() + " is delivering " + foundOrder.getCustomer() + "order");
+
+                        try {
+                            Thread.sleep(8000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        System.out.println(foundOrder.getCustomer() + " order is delivered ");
+                        foundCourier.setCourierStatus(Courier.CourierStatus.FREE);
+                        foundOrder.setDeliveredAt(LocalDateTime.now());
+                        foundOrder.setStatus(Order.OrderStatus.DELIVERED);
+                        freeCourierBlockingQueue.add(foundCourier);
+                        foundOrder.getCustomer().getOrdersHistory().add(foundOrder);
+                    }
+                }, delayInSeconds, TimeUnit.SECONDS);
+            } else {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        couriersWorkExecutor.shutdown();
+    }
+
+    public void stopDeliverySim(){
+        isRunning = false;
+        couriersWorkExecutor.shutdownNow();
+        System.out.println("Delivery simulation stopped");
     }
 
 
 
     public ArrayList<Courier> getCouriers() {
         return couriers;
-    }
-
-    public int getCouriersCount() {
-        return couriersCount;
     }
 
 

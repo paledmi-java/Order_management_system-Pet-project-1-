@@ -237,25 +237,11 @@ public class MenuService {
         boolean areBonusesUsed = showBonusesMessage(client, scanner);
         boolean isPromoCodeUsed = startPromoCodeMessage(scanner, ordersManagerSystem);
         String commentary = startCommentaryMessage(scanner);
-        Order newOrder = ordersManagerSystem.createAnOrder(client, totalPrice, commentary, address,
+        ordersManagerSystem.createAnOrder(client, totalPrice, commentary, address,
                 chosenTime, areBonusesUsed, isPromoCodeUsed);
-
-        // ПОДСТАВИТЬ НОВУЮ РЕАЛИЗАЦИЮ СИМУЛЯЦИИ
-//        Order orderFinished = deliveryManagerSystem.startDeliverySimulation(newOrder, ordersManagerSystem);
-//        client.getOrdersHistory().add(orderFinished);
+        deliveryManagerSystem.startSimForDeliveryApp(ordersManagerSystem);
+        // ПОФИКСИТЬ ЗАКАЗ И ДОСТАВКУ ЗАКАЗА
     }
-
-    // Не создавать новые потоки внутри каждого вызова.
-    //Пусть у тебя будет один общий пул потоков (через ExecutorService), где будут работать курьеры.
-    //
-    //Сделай коллекции потокобезопасными:
-    //
-    //Очередь заказов → BlockingQueue<Order>
-    //
-    //Курьеры → CopyOnWriteArrayList<Courier> или ConcurrentHashMap<Integer, Courier>
-    //
-    //Назначение курьера и изменение статусов — синхронизировать,
-    //либо использовать synchronized, либо ReentrantLock вокруг этих операций.
 
 
 
