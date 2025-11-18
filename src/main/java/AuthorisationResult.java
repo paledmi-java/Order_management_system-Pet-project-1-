@@ -1,17 +1,17 @@
 public class AuthorisationResult {
-    private MenuService.AuthorisationResultEnum authorisationResultEnum;
+    private AuthResEnum authorisationResultEnum;
     private Credentials credentials;
 
-    public AuthorisationResult(MenuService.AuthorisationResultEnum authorisationResultEnum, Credentials credentials) {
+    public AuthorisationResult(AuthResEnum authorisationResultEnum, Credentials credentials) {
         this.authorisationResultEnum = authorisationResultEnum;
         this.credentials = credentials;
     }
 
-    public MenuService.AuthorisationResultEnum getAuthorisationResultEnum() {
+    public AuthResEnum getAuthResEnum() {
         return authorisationResultEnum;
     }
 
-    public void setAuthorisationResultEnum(MenuService.AuthorisationResultEnum authorisationResultEnum) {
+    public void setAuthResEnum(AuthResEnum authorisationResultEnum) {
         this.authorisationResultEnum = authorisationResultEnum;
     }
 
@@ -21,5 +21,11 @@ public class AuthorisationResult {
 
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
+    }
+
+    public enum AuthResEnum {
+        NEED_REGISTRATION,
+        WRONG_PASSWORD,
+        AUTH_SUCCESS
     }
 }

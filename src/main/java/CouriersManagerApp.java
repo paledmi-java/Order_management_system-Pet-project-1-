@@ -8,7 +8,7 @@ public class CouriersManagerApp {
     public static void main(String[] args) throws InterruptedException {
         Scanner scanner = new Scanner(System.in);
         DeliveryManagerSystem deliveryManagerSystem = new DeliveryManagerSystem();
-        int couriersCount = deliveryManagerSystem.createSomeCouriers();
+        deliveryManagerSystem.createSomeCouriers();
         deliveryManagerSystem.setExecutorThreads();
 
         ClientsManagerSystem clientsManagerSystem = new ClientsManagerSystem();

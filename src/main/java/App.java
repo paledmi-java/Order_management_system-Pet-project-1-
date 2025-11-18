@@ -16,10 +16,9 @@ public class App {
                 deliveryManagerSystem, ordersManagerSystem);
 
         deliveryManagerSystem.createSomeCouriers();
+        deliveryManagerSystem.setExecutorThreads();
         productsManagerSystem.fillTheFoodMenu();
         clientsManagerSystem.createAndAddSomeClients();
-
-//        clientsManagerSystem.showAllClients();
 
         Client client = new Client();
         Scanner scanner = new Scanner(System.in);
@@ -33,16 +32,14 @@ public class App {
         }
 
         do {
-//            assert client != null;
             if (!client.isAuthorised()){
                 menuService.showMainMenuForUser();
             } else {
                 menuService.showMainMenuForClient();
             }
 
-            int firstOption = scanner.nextInt();
-            // поменять на scanner.nextLine();
-            scanner.nextLine();
+            String input1 = scanner.nextLine();
+            int firstOption = Integer.parseInt(input1);
 
             switch (firstOption) {
 
@@ -90,7 +87,6 @@ public class App {
                 }
 
                 case 5: {
-                    // CHOSE OPTIONS FOR AUTHORISED CLIENT IS REPEATING THE CODE
                     if(!client.isAuthorised()) {
                         Client newClient = menuService.startRegistrationProcess(scanner);
                         if(newClient != null){
@@ -113,6 +109,10 @@ public class App {
                         break;
                     }
                     break;
+                }
+
+                case 7: {
+
                 }
 
                 case 0: {

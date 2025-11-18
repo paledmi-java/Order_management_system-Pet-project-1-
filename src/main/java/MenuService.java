@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class MenuService {
     private Random random;
@@ -65,7 +68,6 @@ public class MenuService {
         } while (!isExitFromPromos);
     }
 
-    // FINISH GET BASKET MENU
     public void getBasketMenu(Client client, Scanner scanner,
                               DeliveryManagerSystem deliveryManagerSystem, OrdersManagerSystem ordersManagerSystem){
         boolean isBasketExit = false;
@@ -80,6 +82,7 @@ public class MenuService {
                     client.getBasket().remove(basketOption - 1);
                 } else if (basketOption == 0) {
                     this.placingAnOrder(client, totalPrice, scanner, deliveryManagerSystem, ordersManagerSystem);
+                        isBasketExit = true;
                 }
                     System.out.println("Please chose the right option");
             } else {
@@ -89,7 +92,7 @@ public class MenuService {
         } while (!isBasketExit);
     }
 
-    public ClientAddress addNewAddressProcess(Client client, Scanner scanner){
+    private ClientAddress addNewAddressProcess(Client client, Scanner scanner){
         boolean isExit = false;
         ClientAddress clientNewAddress;
         do {
@@ -120,7 +123,7 @@ public class MenuService {
         return clientNewAddress;
     }
 
-    public ClientAddress choseAnAddressProcess(Client client, Scanner scanner) {
+    private ClientAddress choseAnAddressProcess(Client client, Scanner scanner) {
         boolean isExit = false;
         ClientAddress chosenAddress;
         ArrayList<ClientAddress> addresses = client.getClientAddresses();
@@ -131,10 +134,10 @@ public class MenuService {
             } else {
                 System.out.println("Please chose an address or 0 to add a new address:");
                 System.out.println(addresses);
-                int addressOption = scanner.nextInt();
-                scanner.nextLine();
-                if (addressOption > 0 && addressOption <= addresses.size() - 1) {
-                    chosenAddress = addresses.get(addressOption);
+                String inputAddress = scanner.nextLine();
+                int addressOption = Integer.parseInt(inputAddress);
+                if (addressOption > 0 && addressOption <= addresses.size()) {
+                    chosenAddress = addresses.get(addressOption - 1);
                     isExit = true;
                 } else if (addressOption == 0) {
                     chosenAddress = addNewAddressProcess(client, scanner);
@@ -148,29 +151,33 @@ public class MenuService {
         return chosenAddress;
     }
 
-    public LocalDateTime choseDeliveryTimeProcess(Scanner scanner){
-        System.out.println("Please chose delivery time:\n" +
-                "1) The Fastest (1 hour)\n" +
-                "2) To a certain time");
-        int option = scanner.nextInt();
-        scanner.nextLine();
+    private LocalDateTime choseDeliveryTimeProcess(Scanner scanner){
+        boolean isExit = false;
+        do {
+            System.out.println("Please chose delivery time:\n" +
+                    "1) The Fastest (1 hour)\n" +
+                    "2) To a certain time");
+            String input = scanner.nextLine();
+            int option = Integer.parseInt(input);
 
-        if (option == 1){
-            return LocalDateTime.now().plusHours(1);
+            if (option == 1){
+                isExit = true;
+                return LocalDateTime.now().plusHours(1);
 
-        } else if(option == 0){
-            System.out.println("Please enter time for today delivery in format HH:mm:");
-            String inputTime = scanner.nextLine();
-
-            LocalTime chosenTime = LocalTime.parse(inputTime, DateTimeFormatter.ofPattern("HH:mm"));
-            return LocalDateTime.of(LocalDate.now(), chosenTime);
-        } else {
-            System.out.println("Please chose the right option.");
-            return null;
-        }
+            } else if(option == 2){
+                System.out.println("Please enter time for today delivery in format HH:mm:");
+                String inputTime = scanner.nextLine();
+                LocalTime chosenTime = LocalTime.parse(inputTime, DateTimeFormatter.ofPattern("HH:mm"));
+                isExit = true;
+                return LocalDateTime.of(LocalDate.now(), chosenTime);
+            } else {
+                System.out.println("Please chose the right option.");
+                return null;
+            }
+        } while (!isExit);
     }
 
-    public boolean showBonusesMessage(Client client, Scanner scanner){
+    private boolean showBonusesMessage(Client client, Scanner scanner){
         boolean isExit = false;
         boolean areBonusesUsed;
         do {
@@ -193,20 +200,26 @@ public class MenuService {
                 }
             } else {
                 areBonusesUsed = false;
+                System.out.println("You have no bonuses yet.");
+                isExit = true;
             }
         } while (!isExit);
         return areBonusesUsed;
     }
 
-    public String startCommentaryMessage(Scanner scanner){
-        System.out.println("Please enter your commentary: ");
-        return scanner.nextLine();
+    private String startCommentaryMessage(Scanner scanner){
+        String commentary;
+        do {
+            System.out.println("Please enter your commentary: ");
+            commentary = scanner.nextLine();
+        } while (commentary == null);
+        return commentary;
     }
 
 
 
 
-    public boolean startPromoCodeMessage(Scanner scanner, OrdersManagerSystem ordersManagerSystem){
+    private boolean startPromoCodeMessage(Scanner scanner, OrdersManagerSystem ordersManagerSystem){
         boolean isExit = false;
         boolean isPromoCodeUsed;
         do {
@@ -229,7 +242,10 @@ public class MenuService {
         return isPromoCodeUsed;
     }
 
-    public void placingAnOrder(Client client, int totalPrice, Scanner scanner,
+
+
+
+    private void placingAnOrder(Client client, int totalPrice, Scanner scanner,
                                DeliveryManagerSystem deliveryManagerSystem, OrdersManagerSystem ordersManagerSystem){
         System.out.println("Placing an order\n");
         ClientAddress address = choseAnAddressProcess(client, scanner);
@@ -239,8 +255,14 @@ public class MenuService {
         String commentary = startCommentaryMessage(scanner);
         ordersManagerSystem.createAnOrder(client, totalPrice, commentary, address,
                 chosenTime, areBonusesUsed, isPromoCodeUsed);
-        deliveryManagerSystem.startSimForDeliveryApp(ordersManagerSystem);
-        // ПОФИКСИТЬ ЗАКАЗ И ДОСТАВКУ ЗАКАЗА
+        client.getBasket().clear();
+        System.out.println("Starting delivery...");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                deliveryManagerSystem.startSimForDeliveryApp(ordersManagerSystem);
+            }
+        }).start();
     }
 
 
@@ -318,38 +340,23 @@ public class MenuService {
         } while (!isExitFromSearch);
     }
 
-    public enum PutInBasketResult {
-        ADDED,
-        NEED_AUTH,
-        BACK_TO_MENU
-    }
 
-//    public void showSuccessPutInBasketMessage(){
-//        System.out.println("The item successfully added to your cart");
-//    }
-
-    public void addItemInCart(Client client, Item theItem){
+    private void addItemInCart(Client client, Item theItem){
         client.getBasket().add(theItem);
         System.out.println("The item added to your kart");
     }
 
-    public enum AuthorisationResultEnum {
-        NEED_REGISTRATION,
-        WRONG_PASSWORD,
-        AUTH_SUCCESS
-    }
-
-    public AuthorisationResult authorizationGetResult(String login, String password){
+    private AuthorisationResult authorizationGetResult(String login, String password){
         Credentials credentials = clientsManagerSystem.getAllCredentials().get(login);
         if(credentials == null){
-            return new AuthorisationResult(AuthorisationResultEnum.NEED_REGISTRATION, null);
+            return new AuthorisationResult(AuthorisationResult.AuthResEnum.NEED_REGISTRATION, null);
         } else if (credentials.getHashedPassword().equals(password) && credentials.getLogin().equals(login)){
-            return new AuthorisationResult(AuthorisationResultEnum.AUTH_SUCCESS, credentials);
-        } else return new AuthorisationResult(AuthorisationResultEnum.WRONG_PASSWORD, null);
+            return new AuthorisationResult(AuthorisationResult.AuthResEnum.AUTH_SUCCESS, credentials);
+        } else return new AuthorisationResult(AuthorisationResult.AuthResEnum.WRONG_PASSWORD, null);
     }
 
 
-    public Credentials showLoginMessage(Scanner scanner){
+    private Credentials showLoginMessage(Scanner scanner){
         System.out.println("Please enter your login\n" +
                 "Login: ");
         String login = scanner.nextLine();
@@ -367,7 +374,7 @@ public class MenuService {
 
             AuthorisationResult authResult = this.authorizationGetResult
                     (credentialsToAuth.getLogin(), credentialsToAuth.getHashedPassword());
-            if (authResult.getAuthorisationResultEnum() == AuthorisationResultEnum.WRONG_PASSWORD) {
+            if (authResult.getAuthResEnum() == AuthorisationResult.AuthResEnum.WRONG_PASSWORD) {
                 System.out.println("Wrong password. Press '1' to Try Again or '0' Exit");
                 int authOrExit = scanner.nextInt();
                 scanner.nextLine();
@@ -377,12 +384,12 @@ public class MenuService {
                     default -> System.out.println("Please chose the right option\n");
                 }
                 client = null;
-            } else if (authResult.getAuthorisationResultEnum() == AuthorisationResultEnum.AUTH_SUCCESS){
+            } else if (authResult.getAuthResEnum() == AuthorisationResult.AuthResEnum.AUTH_SUCCESS){
                 client = this.clientsManagerSystem.getAllClients().get(authResult.getCredentials().getClientId());
                 System.out.println("Authorisation success");
                 isExitFromLoginMenu = true;
 
-            } else if(authResult.getAuthorisationResultEnum() == AuthorisationResultEnum.NEED_REGISTRATION){
+            } else if(authResult.getAuthResEnum() == AuthorisationResult.AuthResEnum.NEED_REGISTRATION){
 
                 System.out.println("You're not in system, please sign up first\n" +
                         "Press 1 to sign up or 0 to exit");

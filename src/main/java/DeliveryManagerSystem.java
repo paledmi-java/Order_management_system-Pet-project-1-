@@ -13,6 +13,9 @@ public class DeliveryManagerSystem {
     ScheduledExecutorService couriersWorkExecutor;
     BlockingQueue<Courier> freeCourierBlockingQueue = new LinkedBlockingQueue<>();
 
+    public ScheduledExecutorService getCouriersWorkExecutor() {
+        return couriersWorkExecutor;
+    }
 
     public boolean isRunning() {
         return isRunning;
@@ -87,7 +90,7 @@ public class DeliveryManagerSystem {
                         System.out.println("Courier " + foundCourier.getName() +
                                 " will deliver " + foundOrder.getCustomer() + " order at " + foundOrder.getEstimatedDeliveryTime());
                         foundCourier.setCourierStatus(Courier.CourierStatus.DELIVERING);
-                        System.out.println(foundCourier.getName() + " is delivering " + foundOrder.getCustomer() + "order");
+                        System.out.println(foundCourier.getName() + " is delivering " + foundOrder.getCustomer() + "'s order");
 
                         try {
                             Thread.sleep(8000);
